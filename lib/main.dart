@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Compass',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: false,
@@ -48,9 +48,18 @@ class _CompassScreenState extends State<CompassScreen> {
       body: Builder(
         builder: (BuildContext context) {
           if (_hasPermission) {
-            return _buildCompass();
+            return const Compass();
           } else {
-            return _buildPermissionSheet();
+            return Center(
+              child: ElevatedButton(
+                child: const Text('request permission'),
+                onPressed: () {
+                  Permission.locationWhenInUse.request().then((value) {
+                    _fetchPermissionStatus();
+                  });
+                },
+              ),
+            );
           }
         },
       ),
@@ -66,8 +75,15 @@ class _CompassScreenState extends State<CompassScreen> {
       }
     });
   }
+}
 
-  Widget _buildCompass() {
+
+/// compass
+class Compass extends StatelessWidget {
+  const Compass({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<CompassEvent>(
       stream: FlutterCompass.events,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
@@ -85,35 +101,22 @@ class _CompassScreenState extends State<CompassScreen> {
           return const Center(child: Text("No sensors found."));
         }
 
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Text('$direction'),
-                Transform.rotate(
-                    angle: direction * (pi / 180) * -1,
-                    child: Image.asset("assets/compass.png"),
-                ),
-              ],
-            ),
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Text('${direction * (pi / 180) * -1}'),
+              Transform.rotate(
+                angle: direction * (pi / 180) * -1,
+                child: Image.asset("assets/compass.png"),
+              ),
+            ],
           ),
         );
-
       },
     );
   }
-
-  Widget _buildPermissionSheet() {
-    return Center(
-      child: ElevatedButton(
-        child: const Text('request permission'),
-        onPressed: () {
-          Permission.locationWhenInUse.request().then((value) {
-            _fetchPermissionStatus();
-          });
-        },
-      ),
-    );
-  }
 }
+
+
